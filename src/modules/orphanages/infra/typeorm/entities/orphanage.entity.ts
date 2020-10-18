@@ -54,7 +54,7 @@ export class Orphanage {
     const imagesUrl = this.orphanageImages.map(image => {
       return {
         id: image.id,
-        path: `http://localhost:3000/files/${image.path}`,
+        path: `${process.env.STATIC_URL}/${image.path}`,
       }
     })
 

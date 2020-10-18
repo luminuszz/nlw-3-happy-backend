@@ -17,7 +17,11 @@ import {
   editFileName,
   imageFileFilter,
 } from '../../../../../shared/utils/fileFormatet.utils'
+import { ValidationPipe } from '../../../../../shared/pipes/ClassValidate..pipe'
+import { ValidationSchemaPipe } from '../../../../../shared/pipes/SchemaValidate.pipe'
+import { getSinglById } from '../validators/getSinglById.validate'
 import { AnyFilesInterceptor } from '@nestjs/platform-express'
+
 import { diskStorage } from 'multer'
 
 @Controller('orphanages')
@@ -36,7 +40,7 @@ export class OrphanagesController {
   )
   public async createOrphanage(
     @UploadedFiles() files: Express.Multer.File[],
-    @Body() data: ICreateOrphanageDTO
+    @Body(new ValidationPipe()) data: ICreateOrphanageDTO
   ): Promise<Orphanage> {
     const {
       about,
@@ -64,8 +68,6 @@ export class OrphanagesController {
         path: file.path,
       }))
 
-      console.log(files)
-
       await this.orphanagesService.uploadOrphanagesImages({
         files: filesData,
         orphanageId: newOrphanage.id,
@@ -73,23 +75,22 @@ export class OrphanagesController {
 
       return newOrphanage
     } catch (error) {
-      console.log(error)
       throw new BadRequestException()
     }
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
+  @UseInterceptors(ClassSerializerInterceptor)
   public async getAllOrphanages(): Promise<Orphanage[]> {
     const orphanages = await this.orphanagesService.getAllOrphanages()
 
     return orphanages
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
   public async getOrphanageById(
-    @Param('id', new ParseUUIDPipe()) id: string
+    @Param('id', ParseUUIDPipe) id: string
   ): Promise<Orphanage> {
     try {
       const foundedOrphanage = await this.orphanagesService.getOrphanagesById(

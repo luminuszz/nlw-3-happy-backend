@@ -82,7 +82,7 @@ export class OrphanagesService {
       await queryRunnerTransaction.commitTransaction()
     } catch (error) {
       await queryRunnerTransaction.rollbackTransaction()
-      console.log(error)
+
       throw new BadRequestException()
     } finally {
       await queryRunnerTransaction.release()
