@@ -27,14 +27,14 @@ export class CreateOrphaneges1602824925665 implements MigrationInterface {
             name: 'latitude',
             type: 'decimal',
             scale: 10,
-            precision: 10,
+            precision: 20,
             isNullable: true,
           },
           {
             name: 'longitude',
             type: 'decimal',
             scale: 10,
-            precision: 10,
+            precision: 20,
             isNullable: true,
           },
           {
