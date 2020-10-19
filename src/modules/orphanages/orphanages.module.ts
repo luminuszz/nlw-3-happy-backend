@@ -5,10 +5,12 @@ import { OrphanagesService } from './services/orphanages.service'
 import { Orphanage } from './infra/typeorm/entities/orphanage.entity'
 import { OrphanageImage } from './infra/typeorm/entities/orphanageImage.entity'
 import { MulterModule } from '@nestjs/platform-express'
+import { OrphanageRepository } from './infra/typeorm/repositories/orphanage.repository'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Orphanage, OrphanageImage]),
+    TypeOrmModule.forFeature([Orphanage, OrphanageImage, OrphanageRepository]),
+
     MulterModule.register({
       dest: './temp/images',
     }),

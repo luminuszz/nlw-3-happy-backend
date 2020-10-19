@@ -1,22 +1,12 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, Connection } from 'typeorm'
+import { Injectable } from '@nestjs/common'
 import { Orphanage } from '../infra/typeorm/entities/orphanage.entity'
-import { OrphanageImage } from '../infra/typeorm/entities/orphanageImage.entity'
 import { ICreateOrphanageDTO } from '../dtos/CreateOrphanagesDTO'
 import { IUploadOrphanagesImagesDTO } from '../dtos/UploadOrphanagesImagesDTO'
-import { join } from 'path'
+import { OrphanageRepository } from '../infra/typeorm/repositories/orphanage.repository'
 
 @Injectable()
 export class OrphanagesService {
-  constructor(
-    @InjectRepository(Orphanage)
-    private orphanageRepository: Repository<Orphanage>,
-    @InjectRepository(OrphanageImage)
-    private orphanageImageRepository: Repository<OrphanageImage>,
-
-    private connection: Connection
-  ) {}
+  constructor(private orphanageRepository: OrphanageRepository) {}
 
   public async createOrphanages({
     about,
@@ -37,23 +27,17 @@ export class OrphanagesService {
       openOnWeekends,
     })
 
-    await this.orphanageRepository.save(newOrphanages)
-
     return newOrphanages
   }
 
   public async getAllOrphanages(): Promise<Orphanage[]> {
-    const response = await this.orphanageRepository.find({
-      relations: ['orphanageImages'],
-    })
+    const response = await this.orphanageRepository.findAll()
 
     return response
   }
 
   public async getOrphanagesById(id: string): Promise<Orphanage> {
-    const foundedOrphanage = await this.orphanageRepository.findOne(id, {
-      relations: ['orphanageImages'],
-    })
+    const foundedOrphanage = await this.orphanageRepository.findById(id)
 
     if (!foundedOrphanage) {
       throw new Error('Orphange not found')
@@ -66,26 +50,6 @@ export class OrphanagesService {
     files,
     orphanageId,
   }: IUploadOrphanagesImagesDTO): Promise<void> {
-    const queryRunnerTransaction = this.connection.createQueryRunner()
-    await queryRunnerTransaction.connect()
-    await queryRunnerTransaction.startTransaction()
-
-    try {
-      files.forEach(async file => {
-        const newImage = queryRunnerTransaction.manager.create<OrphanageImage>(
-          OrphanageImage,
-          { orphanageId, path: file.fileName }
-        )
-
-        await queryRunnerTransaction.manager.save(newImage)
-      })
-      await queryRunnerTransaction.commitTransaction()
-    } catch (error) {
-      await queryRunnerTransaction.rollbackTransaction()
-
-      throw new BadRequestException()
-    } finally {
-      await queryRunnerTransaction.release()
-    }
+    await this.orphanageRepository.uploadImages({ files, orphanageId })
   }
 }
