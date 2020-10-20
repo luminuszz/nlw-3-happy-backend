@@ -7,7 +7,7 @@ import { HttpExceptionFilter } from './shared/errors/http-exception.filter'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
-  app.useGlobalFilters(new HttpExceptionFilter())
+  // app.useGlobalFilters(new HttpExceptionFilter())
   app.use(
     '/files',
     express.static(join(process.cwd(), __dirname, '..', 'temp', 'images'))

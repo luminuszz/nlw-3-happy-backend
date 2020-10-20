@@ -3,10 +3,18 @@ import { Orphanage } from '../infra/typeorm/entities/orphanage.entity'
 import { ICreateOrphanageDTO } from '../dtos/CreateOrphanagesDTO'
 import { IUploadOrphanagesImagesDTO } from '../dtos/UploadOrphanagesImagesDTO'
 import { OrphanageRepository } from '../infra/typeorm/repositories/orphanage.repository'
+import { OrphanagesImageRepository } from '../infra/typeorm/repositories/OrphangeImage.repository'
+import { InjectRepository } from '@nestjs/typeorm'
 
 @Injectable()
 export class OrphanagesService {
-  constructor(private orphanageRepository: OrphanageRepository) {}
+  constructor(
+    @InjectRepository(OrphanageRepository)
+    private readonly orphanageRepository: OrphanageRepository,
+
+    @InjectRepository(OrphanagesImageRepository)
+    private readonly orphanagesImageRepository: OrphanagesImageRepository
+  ) {}
 
   public async createOrphanages({
     about,
@@ -17,7 +25,7 @@ export class OrphanagesService {
     openHours,
     openOnWeekends,
   }: ICreateOrphanageDTO): Promise<Orphanage> {
-    const newOrphanages = this.orphanageRepository.create({
+    const newOrphanages = await this.orphanageRepository.createOrphanage({
       about,
       instructions,
       latitude,
@@ -50,6 +58,6 @@ export class OrphanagesService {
     files,
     orphanageId,
   }: IUploadOrphanagesImagesDTO): Promise<void> {
-    await this.orphanageRepository.uploadImages({ files, orphanageId })
+    await this.orphanagesImageRepository.uploadImages({ files, orphanageId })
   }
 }

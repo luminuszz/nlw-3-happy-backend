@@ -18,8 +18,6 @@ import {
   imageFileFilter,
 } from '../../../../../shared/utils/fileFormatet.utils'
 import { ValidationPipe } from '../../../../../shared/pipes/ClassValidate..pipe'
-import { ValidationSchemaPipe } from '../../../../../shared/pipes/SchemaValidate.pipe'
-import { getSinglById } from '../validators/getSinglById.validate'
 import { AnyFilesInterceptor } from '@nestjs/platform-express'
 
 import { diskStorage } from 'multer'
@@ -75,7 +73,8 @@ export class OrphanagesController {
 
       return newOrphanage
     } catch (error) {
-      throw new BadRequestException()
+      // throw new BadRequestException()
+      console.log(error)
     }
   }
 

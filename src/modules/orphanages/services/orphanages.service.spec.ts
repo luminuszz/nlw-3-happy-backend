@@ -6,6 +6,7 @@ import { FakeOrphanageRepository } from '../../orphanages/repositories/fakes/Fak
 
 describe('Test OrphanagesController', () => {
   let orphanagesService: OrphanagesService
+  let fakeOrphangeRepository: FakeOrphanageRepository
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -16,6 +17,19 @@ describe('Test OrphanagesController', () => {
   })
 
   it('method:createOrphanage, it should be able to create a new orphanage', async () => {
-    const newOrphange = await orphanagesService.createOrphanages(data)
+    const data = {
+      about: 'sad',
+      instructions: 'sad',
+      id: 'da',
+      latitude: 4544,
+      longitude: 545,
+      openHours: '454',
+      openOnWeekends: 'true',
+      name: 'teste',
+    }
+
+    const newOrphange = await orphanagesService.createOrphanages({ ...data })
+
+    expect(newOrphange).toHaveProperty('id')
   })
 })
