@@ -60,8 +60,4 @@ export class Orphanage {
 
     return imagesUrl
   }
-
-  constructor(partial: Partial<Orphanage>) {
-    Object.assign(this, partial)
-  }
 }

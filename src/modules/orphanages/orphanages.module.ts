@@ -5,23 +5,17 @@ import { OrphanagesService } from './services/orphanages.service'
 import { Orphanage } from './infra/typeorm/entities/orphanage.entity'
 import { OrphanageImage } from './infra/typeorm/entities/orphanageImage.entity'
 import { MulterModule } from '@nestjs/platform-express'
-import { OrphanageRepository } from './infra/typeorm/repositories/orphanage.repository'
-import { OrphanagesImageRepository } from './infra/typeorm/repositories/OrphangeImage.repository'
+import { OrphanageResolver } from './services/orphange.resolver'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Orphanage,
-      OrphanageImage,
-      OrphanageRepository,
-      OrphanagesImageRepository,
-    ]),
+    TypeOrmModule.forFeature([Orphanage, OrphanageImage]),
 
     MulterModule.register({
       dest: './temp/images',
     }),
   ],
   controllers: [OrphanagesController],
-  providers: [OrphanagesService],
+  providers: [OrphanagesService, OrphanageResolver],
 })
 export class OrphanagesModule {}

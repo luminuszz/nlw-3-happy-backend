@@ -2,18 +2,20 @@ import { Injectable } from '@nestjs/common'
 import { Orphanage } from '../infra/typeorm/entities/orphanage.entity'
 import { ICreateOrphanageDTO } from '../dtos/CreateOrphanagesDTO'
 import { IUploadOrphanagesImagesDTO } from '../dtos/UploadOrphanagesImagesDTO'
-import { OrphanageRepository } from '../infra/typeorm/repositories/orphanage.repository'
-import { OrphanagesImageRepository } from '../infra/typeorm/repositories/OrphangeImage.repository'
 import { InjectRepository } from '@nestjs/typeorm'
+import { Connection, Repository } from 'typeorm'
+import { OrphanageImage } from '../infra/typeorm/entities/orphanageImage.entity'
 
 @Injectable()
 export class OrphanagesService {
   constructor(
-    @InjectRepository(OrphanageRepository)
-    private readonly orphanageRepository: OrphanageRepository,
+    @InjectRepository(Orphanage)
+    private readonly orphanageRepository: Repository<Orphanage>,
 
-    @InjectRepository(OrphanagesImageRepository)
-    private readonly orphanagesImageRepository: OrphanagesImageRepository
+    @InjectRepository(OrphanageImage)
+    private readonly orphanagesImageRepository: Repository<OrphanageImage>,
+
+    private readonly connection: Connection
   ) {}
 
   public async createOrphanages({
@@ -25,7 +27,7 @@ export class OrphanagesService {
     openHours,
     openOnWeekends,
   }: ICreateOrphanageDTO): Promise<Orphanage> {
-    const newOrphanages = await this.orphanageRepository.createOrphanage({
+    const newOrphanages = this.orphanageRepository.create({
       about,
       instructions,
       latitude,
@@ -35,17 +37,19 @@ export class OrphanagesService {
       openOnWeekends,
     })
 
+    await this.orphanageRepository.save(newOrphanages)
+
     return newOrphanages
   }
 
   public async getAllOrphanages(): Promise<Orphanage[]> {
-    const response = await this.orphanageRepository.findAll()
+    const response = await this.orphanageRepository.find()
 
     return response
   }
 
   public async getOrphanagesById(id: string): Promise<Orphanage> {
-    const foundedOrphanage = await this.orphanageRepository.findById(id)
+    const foundedOrphanage = await this.orphanageRepository.findOneOrFail(id)
 
     if (!foundedOrphanage) {
       throw new Error('Orphange not found')
@@ -58,6 +62,30 @@ export class OrphanagesService {
     files,
     orphanageId,
   }: IUploadOrphanagesImagesDTO): Promise<void> {
-    await this.orphanagesImageRepository.uploadImages({ files, orphanageId })
+    const queryRunner = this.connection.createQueryRunner()
+
+    await queryRunner.connect()
+
+    await queryRunner.startTransaction()
+
+    try {
+      files.forEach(async image => {
+        const newImage = queryRunner.manager.create<OrphanageImage>(
+          OrphanageImage,
+          {
+            orphanageId,
+            path: image.fileName,
+          }
+        )
+
+        await queryRunner.manager.save(OrphanageImage, newImage)
+      })
+
+      await queryRunner.commitTransaction()
+    } catch (error) {
+      await queryRunner.rollbackTransaction()
+    } finally {
+      await queryRunner.release()
+    }
   }
 }
